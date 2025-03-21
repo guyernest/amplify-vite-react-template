@@ -12,6 +12,14 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
+      
+  Barcode: a.customType({
+    barcode: a.id().required(),
+    product_name: a.string().required(),
+    kosher_info: a.string(),
+    kosher_certificate: a.string(),
+    ingredients: a.string(),
+  }),
 });
 
 export type Schema = ClientSchema<typeof schema>;

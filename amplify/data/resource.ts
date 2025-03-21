@@ -20,6 +20,72 @@ const schema = a.schema({
     kosher_certificate: a.string(),
     ingredients: a.string(),
   }),
+
+  
+  addBarcode: a
+    .mutation()
+    .arguments({
+      barcode: a.id(),
+      product_name: a.string().required(),
+      kosher_info: a.string(),
+      kosher_certificate: a.string(),
+      ingredients: a.string(),
+    })
+    .returns(a.ref("Barcode"))
+    .authorization(allow => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+        dataSource: "ExternalBarcodeTableDataSource",
+        entry: "./addBarcode.js",
+      })
+    ),
+
+      
+  getPost: a
+  .query()
+  .arguments({ barcode: a.id().required() })
+  .returns(a.ref("Barcode"))
+  .authorization(allow => [allow.publicApiKey()])
+  .handler(
+    a.handler.custom({
+      dataSource: "ExternalBarcodeTableDataSource",
+      entry: "./getBarcode.js",
+    })
+  ),
+
+    
+  updateBarcode: a
+    .mutation()
+    .arguments({
+      barcode: a.id().required(),
+      product_name: a.string().required(),
+      kosher_info: a.string(),
+      kosher_certificate: a.string(),
+      ingredients: a.string(),
+      expectedVersion: a.integer().required(),
+    })
+    .returns(a.ref("Barcode"))
+    .authorization(allow => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+        dataSource: "ExternalBarcodeTableDataSource",
+        entry: "./updateBarcode.js",
+      })
+    ),
+
+      
+  deleteBarcode: a
+  .mutation()
+  .arguments({ barcode: a.id().required(), expectedVersion: a.integer() })
+  .returns(a.ref("Barcode"))
+  .authorization(allow => [allow.publicApiKey()])
+  .handler(
+    a.handler.custom({
+      dataSource: "ExternalBarcodeTableDataSource",
+      entry: "./deleteBarcode.js",
+    })
+  ),
+
 });
 
 export type Schema = ClientSchema<typeof schema>;

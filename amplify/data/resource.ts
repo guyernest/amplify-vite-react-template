@@ -41,7 +41,7 @@ const schema = a.schema({
     ),
 
       
-  getPost: a
+  getBarcode: a
   .query()
   .arguments({ barcode: a.id().required() })
   .returns(a.ref("Barcode"))
@@ -53,7 +53,6 @@ const schema = a.schema({
     })
   ),
 
-    
   updateBarcode: a
     .mutation()
     .arguments({

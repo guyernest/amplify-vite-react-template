@@ -50,8 +50,7 @@ function App() {
           product_name: formData.product_name,
           kosher_info: formData.kosher_info,
           kosher_certificate: formData.kosher_certificate,
-          ingredients: formData.ingredients,
-          expectedVersion: 1 // This should ideally come from the current version
+          ingredients: formData.ingredients
         });
         
         if (errors) {
@@ -137,8 +136,7 @@ function App() {
       setIsLoading(true);
       try {
         const { data, errors } = await client.mutations.deleteBarcode({
-          barcode: currentBarcode.barcode,
-          expectedVersion: 1 // This should ideally come from the current version
+          barcode: currentBarcode.barcode
         });
         
         if (errors) {

@@ -60,8 +60,7 @@ const schema = a.schema({
       product_name: a.string().required(),
       kosher_info: a.string(),
       kosher_certificate: a.string(),
-      ingredients: a.string(),
-      expectedVersion: a.integer().required(),
+      ingredients: a.string()
     })
     .returns(a.ref("Barcode"))
     .authorization(allow => [allow.publicApiKey()])
@@ -75,7 +74,7 @@ const schema = a.schema({
       
   deleteBarcode: a
   .mutation()
-  .arguments({ barcode: a.id().required(), expectedVersion: a.integer() })
+  .arguments({ barcode: a.id().required() })
   .returns(a.ref("Barcode"))
   .authorization(allow => [allow.publicApiKey()])
   .handler(

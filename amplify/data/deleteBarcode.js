@@ -2,16 +2,7 @@ import { util } from "@aws-appsync/utils";
 import * as ddb from "@aws-appsync/utils/dynamodb";
 
 export function request(ctx) {
-  let condition = null;
-  if (ctx.args.expectedVersion) {
-    condition = {
-      or: [
-        { barcode: { attributeExists: false } },
-        { version: { eq: ctx.args.expectedVersion } },
-      ],
-    };
-  }
-  return ddb.remove({ key: { barcode: ctx.args.barcode }, condition });
+  return ddb.remove({ key: { barcode: ctx.args.barcode } });
 }
 
 export function response(ctx) {

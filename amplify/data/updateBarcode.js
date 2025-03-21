@@ -2,7 +2,7 @@ import { util } from "@aws-appsync/utils";
 import * as ddb from "@aws-appsync/utils/dynamodb";
 
 export function request(ctx) {
-  const { barcode, expectedVersion, ...rest } = ctx.args;
+  const { barcode, ...rest } = ctx.args;
   const values = Object.entries(rest).reduce((obj, [key, value]) => {
     obj[key] = value ?? ddb.operations.remove();
     return obj;
@@ -10,8 +10,7 @@ export function request(ctx) {
 
   return ddb.update({
     key: { barcode },
-    condition: { version: { eq: expectedVersion } },
-    update: { ...values, version: ddb.operations.increment(1) },
+    update: { ...values },
   });
 }
 

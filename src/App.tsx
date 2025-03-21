@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
@@ -8,9 +8,10 @@ const client = generateClient<Schema>();
 
 function App() {
   const { signOut } = useAuthenticator();
-  const [barcodes, setBarcodes] = useState<Array<Schema["Barcode"]["type"]>>([]);
   const [searchBarcode, setSearchBarcode] = useState("");
   const [currentBarcode, setCurrentBarcode] = useState<Schema["Barcode"]["type"] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     barcode: "",
     product_name: "",
@@ -39,6 +40,7 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     try {
       if (isEditing && currentBarcode) {
@@ -79,10 +81,14 @@ function App() {
       resetForm();
     } catch (error) {
       console.error("Error submitting barcode:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const searchBarcodeByCode = async (barcode: string) => {
+    setSearchError(null);
+    setIsLoading(true);
     try {
       const { data, errors } = await client.queries.getBarcode({
         barcode: barcode
@@ -91,15 +97,20 @@ function App() {
       if (errors) {
         console.error("Search errors:", errors);
         setCurrentBarcode(null);
+        setSearchError("An error occurred while searching. Please try again.");
       } else if (data) {
         console.log("Found barcode:", data);
         setCurrentBarcode(data);
       } else {
         setCurrentBarcode(null);
+        setSearchError(`No product found with barcode: ${barcode}`);
       }
     } catch (error) {
       console.error("Error searching barcode:", error);
       setCurrentBarcode(null);
+      setSearchError("An error occurred while searching. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,6 +134,7 @@ function App() {
 
   const deleteBarcode = async () => {
     if (currentBarcode) {
+      setIsLoading(true);
       try {
         const { data, errors } = await client.mutations.deleteBarcode({
           barcode: currentBarcode.barcode,
@@ -139,6 +151,8 @@ function App() {
         }
       } catch (error) {
         console.error("Error deleting barcode:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -157,8 +171,30 @@ function App() {
             onChange={(e) => setSearchBarcode(e.target.value)}
             placeholder="Enter barcode number"
           />
-          <button type="submit">Search</button>
+          <button type="submit" disabled={isLoading}>
+            Search
+            {isLoading && <span className="loading-indicator"></span>}
+          </button>
+          <button 
+            type="button"
+            disabled={isLoading}
+            onClick={() => {
+              if ('mediaDevices' in navigator && 'BarcodeDetector' in window) {
+                alert('Barcode scanning is available in your browser but not yet implemented in this app.');
+                // Future enhancement: implement barcode scanning
+              } else {
+                alert('Barcode scanning is not available in your browser.');
+              }
+            }}
+          >
+            Scan
+          </button>
         </form>
+        {searchError && (
+          <div className="search-error">
+            {searchError}
+          </div>
+        )}
       </div>
 
       {/* Display Search Results */}
@@ -173,8 +209,11 @@ function App() {
             <p><strong>Ingredients:</strong> {currentBarcode.ingredients || "N/A"}</p>
             
             <div className="button-group">
-              <button onClick={editBarcode}>Edit</button>
-              <button onClick={deleteBarcode}>Delete</button>
+              <button onClick={editBarcode} disabled={isLoading}>Edit</button>
+              <button onClick={deleteBarcode} disabled={isLoading}>
+                Delete
+                {isLoading && <span className="loading-indicator"></span>}
+              </button>
             </div>
           </div>
         </div>
@@ -238,8 +277,11 @@ function App() {
           </div>
           
           <div className="button-group">
-            <button type="submit">{isEditing ? "Update" : "Add"}</button>
-            {isEditing && <button type="button" onClick={resetForm}>Cancel</button>}
+            <button type="submit" disabled={isLoading}>
+              {isEditing ? "Update" : "Add"}
+              {isLoading && <span className="loading-indicator"></span>}
+            </button>
+            {isEditing && <button type="button" onClick={resetForm} disabled={isLoading}>Cancel</button>}
           </div>
         </form>
       </div>
